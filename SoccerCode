@@ -1,0 +1,205 @@
+from ursina import *
+from ursina.prefabs.first_person_controller import FirstPersonController
+
+
+app = Ursina()
+
+
+sky = Sky(texture='Sky.png')
+grass_scale = (100, 0, 100)  # Adjust the scale values as needed
+for z in range(10):
+    for x in range(10):
+        Entity(
+            model="cube",
+            color=color.white,
+            collider="cube",
+            ignore=True,
+            parent=scene,
+            origin_y=0.5,  # Use the same origin_y for consistency
+            texture="Chess.png",
+            scale=grass_scale
+        )
+
+
+player = FirstPersonController(position = (50,0,50), speed = 5)
+
+
+
+
+
+
+visible_sphere = Entity(
+    model="sphere",
+    texture = "Soccer.png",
+    color=color.white,
+    position=(0, 1, 0),  # Adjust the position as needed
+    scale=(1, 1, 1)  # Adjust the scale as needed
+)
+red_cube = Entity(
+    model = "cube",
+    color = color.white,
+    position = (0,0,55),
+    scale = (10,10,5),
+    texture = "Goal.png"
+)
+blue_cube = Entity(
+    model = "cube",
+    color = color.white,
+    position = (0,0,-40),
+    scale = (10,10,5),
+    texture = "Goal.png"
+)
+
+
+mouse.locked = False
+score_red = 0
+score_blue = 0
+global mouse_pressed
+global mouse_clicked
+mouse_clicked = False
+mouse_pressed = False
+timer = 60
+timer_speed = 0.5
+text_red = Text(
+    text="Score: " + str(score_red),
+    position=(.5, .4),  # Adjust the position as needed
+    scale=2.5,  # Adjust the scale as needed
+    origin=(0, 0),  # Set the origin to the top-left corner
+    color=color.red
+)
+text_blue = Text(
+    text="Score: " + str(score_blue),
+    position=(-.5, .4),  # Adjust the position as needed
+    scale=2.5,  # Adjust the scale as needed
+    origin=(0, 0),  # Set the origin to the top-left corner
+    color=color.blue
+)
+Timer = Text(
+text = "Timer" +" "+ str(int(timer)),
+position = (0, .4),
+scale = 2.5,
+origin = (0,0),
+color = color.yellow
+)
+def increment_score_red():
+    global score_red
+    score_red += 1
+    text_red.text = "Score: " + str(score_red)
+def increment_score_blue():
+    global score_blue
+    score_blue += 1
+    text_blue.text  = "Score: " + str(score_blue)
+def decremement_timer():
+    global timer
+    timer -= time.dt*10
+
+
+
+
+    Timer.text = "Timer" + str(int(timer))
+    if timer <= 1:
+        timer = 1
+
+
+   
+
+
+
+
+    if timer == 1 and score_blue > score_red:
+        Blue_win = Text(
+        text = "Blue wins",
+        position = (0, .4),
+        scale = 5,
+        origin = (0,0),
+        color = color.blue
+    )
+
+
+    if timer == 1 and score_red > score_blue:
+        Red_win = Text(
+            text = "Red wins",
+            position = (0, .4),
+            scale = 5,
+            origin = (0,0),
+            color = color.red
+        )
+   
+kick_button_red = Button(
+    text='Kick',
+    color=color.red,
+    scale=(0.1, 0.05),
+    position=(0.8, -0.4),
+    on_click = None,
+     # Replace this lambda function with your kick logic
+)
+kick_button_blue = Button(
+    text = 'Kick',
+    color = color.blue,
+    scale = (0.1, 0.05),
+    position = (0.4,-0.4),
+    on_click = None,
+)
+def kick_red():
+    print("Ball has been kicked")
+    visible_sphere.position += Vec3(0,0,1)
+def kick_blue():
+    visible_sphere.position -= Vec3(0,0,1)
+
+
+def update():
+    if player.position.x > 49:
+        player.position = (49,player.position.y,player.position.z)
+         
+    elif player.position.x < -49:
+        player.position = (-49,player.position.y,player.position.z)
+     
+    if player.position.z > 49:
+        player.position = (player.position.x,player.position.y,49)
+       
+    elif player.position.z < -49:
+        player.position = (player.position.x,player.position.y,-49)
+    decremement_timer()
+    if held_keys['left mouse']:
+        kick_red()
+    if held_keys['right mouse']:
+        kick_blue()
+    global mouse_pressed
+    global mouse_clicked
+    if held_keys['l']:
+        mouse.locked = True
+    elif held_keys['m']:
+        mouse.locked = False
+   # if held_keys['left mouse'] and not mouse_pressed:
+      #  increment_score()
+      #  mouse_pressed = True
+   # elif not held_keys['left mouse']:
+       # mouse_pressed = False
+    #if held_keys['right mouse'] and not mouse_clicked:
+        #decrement_score()
+        #mouse_clicked = True
+    #elif not held_keys['right mouse']:
+        #mouse_clicked = False
+    if held_keys['shift']:
+        player.speed = 15
+    else:
+        player.speed = 5
+    if visible_sphere.position == (0,1,55):
+        increment_score_red()
+        visible_sphere.position = (0,1,0)
+    elif visible_sphere.position == (0,1,-40):
+        increment_score_blue()
+        visible_sphere.position = (0,1,0)
+    #if kick_button.on_click:
+        #visible_sphere.position += Vec3(0, 0, 1) # Move forward
+    #elif held_keys['right mouse']:
+        #visible_sphere.position += Vec3(0, 0, -1)  # Move backward
+    #if held_keys['a']:
+        #visible_sphere.position += Vec3(-1, 0, 0)  # Move left
+    #elif held_keys['d']:
+        #visible_sphere.position += Vec3(1, 0, 0)
+
+
+
+
+app.run()
